@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcoRecicla</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="encabezado">
+    <div class="contenedor encabezado-interno">
+      <a class="marca" href="#guia">EcoRecicla</a>
+      <nav aria-label="Principal">
+        <a href="#guia">Guía</a>
+        <a href="#puntos">Puntos</a>
+        <a href="#registro">Registrar</a>
+        <a href="#progreso">Progreso</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <section class="seccion" id="guia" aria-labelledby="titulo-guia">
+      <h2 id="titulo-guia">Guía de separación</h2>
+      <p class="descripcion">Elige un material y consulta en qué caneca va.</p>
+      <form id="form-guia" class="formulario">
+        <div class="campo">
+          <label for="guia-material">Material</label>
+          <select id="guia-material"></select>
+        </div>
+        <button type="submit">Consultar</button>
+      </form>
+      <p id="mensaje-guia" role="alert" hidden></p>
+      <div id="resultado-guia" aria-live="polite"></div>
+    </section>
+
+    <section class="seccion" id="puntos" aria-labelledby="titulo-puntos">
+      <h2 id="titulo-puntos">Puntos de reciclaje</h2>
+      <p class="descripcion">Busca puntos por localidad y por material.</p>
+      <form id="form-puntos" class="formulario">
+        <div class="campo">
+          <label for="puntos-localidad">Localidad</label>
+          <select id="puntos-localidad"></select>
+        </div>
+        <div class="campo">
+          <label for="puntos-material">Material</label>
+          <select id="puntos-material"></select>
+        </div>
+        <button type="submit">Buscar</button>
+      </form>
+      <p id="mensaje-puntos" role="alert" hidden></p>
+      <ul id="lista-puntos" class="lista-puntos" aria-live="polite"></ul>
+    </section>
+
+    <section class="seccion" id="registro" aria-labelledby="titulo-registro">
+      <h2 id="titulo-registro">Registrar reciclaje</h2>
+      <p class="descripcion">Anota el material, la cantidad en kilogramos y la fecha.</p>
+      <form id="form-registro" class="formulario" novalidate>
+        <div class="campo">
+          <label for="reg-material">Material</label>
+          <select id="reg-material"></select>
+        </div>
+        <div class="campo">
+          <label for="reg-cantidad">Cantidad (kg)</label>
+          <input id="reg-cantidad" type="text" inputmode="decimal" autocomplete="off" placeholder="2.5">
+        </div>
+        <div class="campo">
+          <label for="reg-fecha">Fecha</label>
+          <input id="reg-fecha" type="date">
+        </div>
+        <button type="submit">Registrar</button>
+      </form>
+      <p id="mensaje-registro" role="alert" hidden></p>
+    </section>
+
+    <section class="seccion" id="progreso" aria-labelledby="titulo-progreso">
+      <h2 id="titulo-progreso">Historial y progreso</h2>
+      <dl class="totales">
+        <div>
+          <dt>Total reciclado</dt>
+          <dd><span id="total-kg">0</span> kg</dd>
+        </div>
+        <div>
+          <dt>Puntos acumulados</dt>
+          <dd id="total-puntos">0</dd>
+        </div>
+      </dl>
+      <h3>Insignias</h3>
+      <ul id="lista-insignias" class="lista-insignias"></ul>
+      <h3>Registros</h3>
+      <p id="sin-registros" class="descripcion">Aún no hay registros.</p>
+      <div id="tabla-contenedor" class="tabla-contenedor" hidden>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Material</th>
+              <th scope="col">Cantidad (kg)</th>
+              <th scope="col">Puntos</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-cuerpo"></tbody>
+        </table>
+      </div>
+      <p id="mensaje-progreso" role="status" hidden></p>
+      <button type="button" id="borrar-historial" class="secundario">Borrar historial</button>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">Proyecto académico — Universidad Manuela Beltrán</div>
+  </footer>
+
+  <script src="js/errores.js"></script>
+  <script src="js/decimales.js"></script>
+  <script src="js/validaciones.js"></script>
+  <script src="js/guia.js"></script>
+  <script src="js/puntos.js"></script>
+  <script src="js/registro.js"></script>
+  <script src="js/progreso.js"></script>
+  <script src="js/almacenamiento.js"></script>
+  <script src="js/ecorecicla.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
