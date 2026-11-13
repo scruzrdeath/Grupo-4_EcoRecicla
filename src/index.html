@@ -1,125 +1,312 @@
 <!DOCTYPE html>
+<!-- ESTRUCTURA: este archivo solo contiene HTML. Estilos en css/styles.css y lógica en js/*.js -->
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EcoRecicla</title>
-  <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EcoRecicla — App</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+<link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <header class="encabezado">
-    <div class="contenedor encabezado-interno">
-      <a class="marca" href="#guia">EcoRecicla</a>
-      <nav aria-label="Principal">
-        <a href="#guia">Guía</a>
-        <a href="#puntos">Puntos</a>
-        <a href="#registro">Registrar</a>
-        <a href="#progreso">Progreso</a>
-      </nav>
+
+<header class="topbar">
+  <span class="brand-leaf"></span><h1>EcoRecicla</h1>
+</header>
+
+<nav class="main-nav">
+  <button class="nav-btn" data-view="mapa">Mapa</button>
+  <button class="nav-btn" data-view="registro">Registrar reciclaje</button>
+  <button class="nav-btn active" data-view="guias">Guías</button>
+</nav>
+
+<div class="view-container">
+
+  <!-- ======================= VISTA: MAPA ======================= -->
+  <section id="view-mapa" class="app-view">
+    <div class="layout">
+
+      <aside class="sidebar">
+        <div class="panel-block">
+          <input type="text" id="search-input" class="search-input" placeholder="Buscar por nombre o barrio..." />
+          <div class="filters" id="filter-chips"></div>
+        </div>
+
+        <div class="panel-block">
+          <div class="locate-row">
+            <button class="btn-locate" id="locate-btn">Usar mi ubicación</button>
+          </div>
+          <p id="location-status">Aún no se ha activado la ubicación. Se muestran distancias desde el centro de Bogotá.</p>
+        </div>
+
+        <div class="list-heading">
+          <span>PUNTOS CERCANOS</span>
+          <span id="list-count"></span>
+        </div>
+        <ul class="point-list" id="point-list"></ul>
+
+        <p class="disclaimer">Los puntos mostrados son datos de ejemplo con fines académicos y no corresponden a un directorio verificado en tiempo real.</p>
+      </aside>
+
+      <main class="map-wrap">
+        <div id="map"></div>
+
+        <div id="detail-panel" class="hidden">
+          <div class="detail-header">
+            <h3 id="detail-name"></h3>
+            <button class="close-detail" id="close-detail" aria-label="Cerrar">×</button>
+          </div>
+          <p id="detail-address"></p>
+          <div class="detail-row">
+            <strong>Horario</strong>
+            <span id="detail-hours"></span>
+          </div>
+          <div class="detail-row">
+            <strong>Materiales que recibe</strong>
+            <div class="tag-row" id="detail-materials"></div>
+          </div>
+          <div class="detail-row">
+            <strong>Distancia aproximada</strong>
+            <span id="detail-distance"></span>
+          </div>
+          <button class="btn-route" id="route-btn">Cómo llegar</button>
+          <p id="route-status"></p>
+        </div>
+      </main>
+
     </div>
-  </header>
+  </section>
 
-  <main class="contenedor">
-    <section class="seccion" id="guia" aria-labelledby="titulo-guia">
-      <h2 id="titulo-guia">Guía de separación</h2>
-      <p class="descripcion">Elige un material y consulta en qué caneca va.</p>
-      <form id="form-guia" class="formulario">
-        <div class="campo">
-          <label for="guia-material">Material</label>
-          <select id="guia-material"></select>
-        </div>
-        <button type="submit">Consultar</button>
-      </form>
-      <p id="mensaje-guia" role="alert" hidden></p>
-      <div id="resultado-guia" aria-live="polite"></div>
-    </section>
+  <!-- ======================= VISTA: REGISTRO + RANKING ======================= -->
+  <section id="view-registro" class="app-view">
+    <div class="container">
 
-    <section class="seccion" id="puntos" aria-labelledby="titulo-puntos">
-      <h2 id="titulo-puntos">Puntos de reciclaje</h2>
-      <p class="descripcion">Busca puntos por localidad y por material.</p>
-      <form id="form-puntos" class="formulario">
-        <div class="campo">
-          <label for="puntos-localidad">Localidad</label>
-          <select id="puntos-localidad"></select>
-        </div>
-        <div class="campo">
-          <label for="puntos-material">Material</label>
-          <select id="puntos-material"></select>
-        </div>
-        <button type="submit">Buscar</button>
-      </form>
-      <p id="mensaje-puntos" role="alert" hidden></p>
-      <ul id="lista-puntos" class="lista-puntos" aria-live="polite"></ul>
-    </section>
-
-    <section class="seccion" id="registro" aria-labelledby="titulo-registro">
-      <h2 id="titulo-registro">Registrar reciclaje</h2>
-      <p class="descripcion">Anota el material, la cantidad en kilogramos y la fecha.</p>
-      <form id="form-registro" class="formulario" novalidate>
-        <div class="campo">
-          <label for="reg-material">Material</label>
-          <select id="reg-material"></select>
-        </div>
-        <div class="campo">
-          <label for="reg-cantidad">Cantidad (kg)</label>
-          <input id="reg-cantidad" type="text" inputmode="decimal" autocomplete="off" placeholder="2.5">
-        </div>
-        <div class="campo">
-          <label for="reg-fecha">Fecha</label>
-          <input id="reg-fecha" type="date">
-        </div>
-        <button type="submit">Registrar</button>
-      </form>
-      <p id="mensaje-registro" role="alert" hidden></p>
-    </section>
-
-    <section class="seccion" id="progreso" aria-labelledby="titulo-progreso">
-      <h2 id="titulo-progreso">Historial y progreso</h2>
-      <dl class="totales">
+      <!-- Reloj simulador de ciclo de 24 horas -->
+      <div class="clock-card">
         <div>
-          <dt>Total reciclado</dt>
-          <dd><span id="total-kg">0</span> kg</dd>
+          <div class="clock-label">Simulador de ciclo (24 hrs)</div>
+          <div class="clock-display" id="clockDisplay">00:00:00</div>
         </div>
-        <div>
-          <dt>Puntos acumulados</dt>
-          <dd id="total-puntos">0</dd>
+        <div class="clock-controls">
+          <button class="btn-time" onclick="addTime(15)">+15m</button>
+          <button class="btn-time" onclick="addTime(60)">+1h</button>
+          <button class="btn-time" onclick="addTime(300)">+5h</button>
+          <button class="btn-time" id="toggleClockBtn" onclick="toggleClock()">⏸ Pausar</button>
         </div>
-      </dl>
-      <h3>Insignias</h3>
-      <ul id="lista-insignias" class="lista-insignias"></ul>
-      <h3>Registros</h3>
-      <p id="sin-registros" class="descripcion">Aún no hay registros.</p>
-      <div id="tabla-contenedor" class="tabla-contenedor" hidden>
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Fecha</th>
-              <th scope="col">Material</th>
-              <th scope="col">Cantidad (kg)</th>
-              <th scope="col">Puntos</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-cuerpo"></tbody>
-        </table>
       </div>
-      <p id="mensaje-progreso" role="status" hidden></p>
-      <button type="button" id="borrar-historial" class="secundario">Borrar historial</button>
-    </section>
-  </main>
 
-  <footer class="pie">
-    <div class="contenedor">Proyecto académico — Universidad Manuela Beltrán</div>
-  </footer>
+      <!-- Sub-pestañas: Registro / Ranking -->
+      <nav class="subnav-tabs">
+        <button class="tab-btn active" onclick="switchSubTab('registro')">Registrar</button>
+        <button class="tab-btn" onclick="switchSubTab('ranking')">Ver Ranking 🏆</button>
+      </nav>
 
-  <script src="js/errores.js"></script>
-  <script src="js/decimales.js"></script>
-  <script src="js/validaciones.js"></script>
-  <script src="js/guia.js"></script>
-  <script src="js/puntos.js"></script>
-  <script src="js/registro.js"></script>
-  <script src="js/progreso.js"></script>
-  <script src="js/almacenamiento.js"></script>
-  <script src="js/ecorecicla.js"></script>
-  <script src="js/app.js"></script>
+      <!-- SUB-VISTA: Formulario de registro -->
+      <section id="subview-registro" class="view-section active">
+        <p class="subtitle">Panel de captura de materiales reciclados por usuario</p>
+
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-value" id="totalWeight">0 kg</div>
+            <div class="stat-label">Peso total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="weeklyWeight">0 kg</div>
+            <div class="stat-label">Peso esta semana</div>
+          </div>
+          <div class="stat-card">
+            <button onclick="openModal()">
+              <div class="stat-value" id="totalRecords">0</div>
+              <div class="stat-label">Registros totales (ver)</div>
+            </button>
+          </div>
+        </div>
+
+        <form id="recycleForm">
+          <h2>Registrar material</h2>
+
+          <div class="field">
+            <label for="usuario">Usuario que registra</label>
+            <select id="usuario" required>
+              <option value="Damián">Damián</option>
+              <option value="Sofía">Sofía</option>
+              <option value="Mateo">Mateo</option>
+              <option value="Ana">Ana</option>
+              <option value="Carlos">Carlos</option>
+              <option value="Valentina">Valentina</option>
+              <option value="Lucas">Lucas</option>
+              <option value="Camila">Camila</option>
+              <option value="Diego">Diego</option>
+              <option value="Mariana">Mariana</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="material">Tipo de material</label>
+            <select id="material" required>
+              <option value="">Selecciona...</option>
+              <option value="Plástico">Plástico</option>
+              <option value="Vidrio">Vidrio</option>
+              <option value="Papel">Papel</option>
+              <option value="Metal">Metal</option>
+            </select>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="peso">Peso (kg)</label>
+              <input type="number" id="peso" min="0" step="0.01" required>
+            </div>
+            <div class="field">
+              <label for="cantidad">Cantidad (unidades)</label>
+              <input type="number" id="cantidad" min="1" step="1" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="descripcion">Descripción <span class="optional-tag">(opcional)</span></label>
+            <textarea id="descripcion" placeholder="Ej: botellas separadas por color, empaques de tienda, etc."></textarea>
+          </div>
+          <button type="submit" class="submit">Agregar registro y sumar puntos</button>
+        </form>
+      </section>
+
+      <!-- SUB-VISTA: Ranking Top 10 -->
+      <section id="subview-ranking" class="view-section">
+        <p class="subtitle">Compara tu posición y progreso global entre los 10 mejores recicladores.</p>
+
+        <div class="status-banner" id="statusBanner">
+          <div class="status-info" id="statusInfo">
+            <h3>Competencia Activa</h3>
+            <p>El ranking se actualiza automáticamente con cada registro.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-action" id="finishBtn" onclick="finishRanking()">Finalizar Competencia</button>
+            <button class="btn-action" style="background: var(--carbon-suave);" onclick="resetAllData()">Reiniciar Todo</button>
+          </div>
+        </div>
+
+        <div class="my-status-card">
+          <div>
+            <h4>Tu Estado Actual</h4>
+            <div class="user-name" id="myUserName">Damián</div>
+          </div>
+          <div class="my-status-metrics">
+            <div>
+              <div class="metric-val" id="myRankVal">#-</div>
+              <div class="metric-lbl">Posición</div>
+            </div>
+            <div>
+              <div class="metric-val" id="myPointsVal">0</div>
+              <div class="metric-lbl">Puntos</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ranking-card">
+          <table class="ranking-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">Pos.</th>
+                <th style="width: 55%;">Usuario</th>
+                <th style="width: 30%; text-align: right;">Puntos</th>
+              </tr>
+            </thead>
+            <tbody id="rankingBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal">
+        <button class="close-btn" onclick="closeModal()">✕</button>
+        <h2>Historial de registros</h2>
+        <div id="historyContent"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= VISTA: GUÍAS ======================= -->
+  <section id="view-guias" class="app-view active">
+    <div class="container">
+      <p class="subtitle">Selecciona una opción para desplegar la mini guía correspondiente</p>
+
+      <nav class="menu-container">
+        <button class="btn-guide active" onclick="showGuide('guia1', this)">¿Cómo reciclar?</button>
+        <button class="btn-guide" onclick="showGuide('guia2', this)">Guías de reciclaje</button>
+        <button class="btn-guide" onclick="showGuide('guia3', this)">Consejos útiles</button>
+        <button class="btn-guide" onclick="showGuide('guia4', this)">Según material</button>
+      </nav>
+
+      <main class="content-container">
+
+        <article id="guia1" class="guide-card active">
+          <h2>¿Cómo reciclar correctamente?</h2>
+          <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80" alt="Separación de residuos">
+          <p>Separar tus residuos correctamente ayuda a reincorporar materiales al ciclo productivo de forma eficiente:</p>
+          <ol>
+            <li><strong>Limpia y seca:</strong> Enjuaga los envases de comida o bebida antes de reciclarlos.</li>
+            <li><strong>Aplasta:</strong> Reduce el volumen de botellas de plástico y cajas de cartón.</li>
+            <li><strong>Separa por contenedores:</strong> Utiliza el código de colores de tu localidad (p. ej., Blanco para aprovechables, Verde para orgánicos, Negro para no aprovechables).</li>
+          </ol>
+        </article>
+
+        <article id="guia2" class="guide-card">
+          <h2>Guías de reciclaje</h2>
+          <img src="https://images.unsplash.com/photo-1595278069441-2cf29f8005a4?auto=format&fit=crop&w=800&q=80" alt="Símbolos y contenedores de reciclaje">
+          <p>Pasos fundamentales para implementar una rutina de reciclaje en el hogar o la oficina:</p>
+          <ul>
+            <li><strong>Identificación:</strong> Revisa los símbolos de reciclaje en los empaques (triángulo de Moebius).</li>
+            <li><strong>Punto ecológico:</strong> Ubica recipientes diferenciados en un lugar visible de la casa.</li>
+            <li><strong>Entrega responsable:</strong> Entrega los materiales reciclables a los recicladores de oficio o llévalos a un punto limpio.</li>
+          </ul>
+        </article>
+
+        <article id="guia3" class="guide-card">
+          <h2>Consejos sobre reciclaje</h2>
+          <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80" alt="Estilo de vida sostenible">
+          <p>Aplica la regla de las 3 R para maximizar el impacto de tus hábitos:</p>
+          <ul>
+            <li><strong>Reducir:</strong> Evita productos con plásticos de un solo uso o envoltorios innecesarios.</li>
+            <li><strong>Reutilizar:</strong> Dale una segunda vida a frascos de vidrio, cajas y bolsas de tela.</li>
+            <li><strong>Cuidado con los contaminantes:</strong> El papel o cartón sucio con grasa o comida <em>no</em> se puede reciclar.</li>
+          </ul>
+        </article>
+
+        <article id="guia4" class="guide-card">
+          <h2>Ejemplos y guías según el tipo de material</h2>
+          <img src="https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=800&q=80" alt="Materiales para reciclar">
+          <p>Aprende a clasificar según la composición del residuo:</p>
+          <ul>
+            <li><strong>Plásticos (PET y PEAD):</strong> Botellas de agua, recipientes de detergente y tapas.</li>
+            <li><strong>Papel y Cartón:</strong> Cuadernos, periódicos, cajas de cartón y folletos (deben estar secos).</li>
+            <li><strong>Vidrio:</strong> Botellas de bebidas, frascos de alimentos y perfumes (sin tapas metálicas ni corcho).</li>
+            <li><strong>Metales:</strong> Latas de aluminio (gaseosas) y latas de hojalata (enlatados de comida).</li>
+          </ul>
+        </article>
+
+      </main>
+    </div>
+  </section>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+<!-- Orden importante: navigation -> guides -> registro -> mapa (las librerías Leaflet se cargan antes) -->
+<script src="js/navigation.js"></script>
+
+<script src="js/guides.js"></script>
+
+<script src="js/registro.js"></script>
+
+<script src="js/mapa.js"></script>
+
 </body>
 </html>
